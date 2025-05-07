@@ -2,58 +2,48 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Events\OrderCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\CreateOrderRequest;
-use Illuminate\Support\Facades\DB;
+use App\Repositories\OrderRepositoryInterface;
 use Illuminate\Http\JsonResponse;
 
 class OrderController extends Controller
 {
+    public function __construct(private OrderRepositoryInterface $orderRepository) {}
+
     public function store(CreateOrderRequest $request): JsonResponse
     {
         $data = $request->validated();
 
-        DB::insert(
-            'INSERT INTO orders (product_id, quantity, price, order_date, created_at, updated_at)
-             VALUES (?, ?, ?, ?, ?, ?)',
-            [
-                $data['product_id'],
-                $data['quantity'],
-                $data['price'],
-                $data['order_date'],
-                now(),
-                now()
-            ]
-        );
+        $order = $this->orderRepository->create([
+            'product_id' => $request->input('product_id'),
+            'quantity'   => $request->input('quantity'),
+            'price'      => $request->input('price'),
+            'date'       => now(),
+        ]);
 
-        return response()->json(['message' => 'Order created successfully.'], 201);
+        event(new OrderCreated($order));
+
+        return response()->json([
+            'message' => 'Order created',
+            'order' => $order
+        ], 201);
     }
+
 
     public function analytics(): JsonResponse
     {
-        $totalRevenue = DB::table('orders')->sum('price');
-
-        $topProducts = DB::select(
-            'SELECT product_id, SUM(quantity) as total_sold
-             FROM orders
-             GROUP BY product_id
-             ORDER BY total_sold DESC
-             LIMIT 5'
-        );
-
-        $revenueLastMinute = DB::selectOne(
-            'SELECT SUM(price) as revenue FROM orders WHERE order_date >= datetime("now", "-1 minute")'
-        )?->revenue ?? 0;
-
-        $ordersLastMinute = DB::selectOne(
-            'SELECT COUNT(*) as count FROM orders WHERE order_date >= datetime("now", "-1 minute")'
-        )?->count ?? 0;
+        $totalRevenue = $this->orderRepository->getTotalRevenue();
+        $topProducts = $this->orderRepository->getTopProducts();
+        $revenueLastMinute = $this->orderRepository->getRevenueLastMinute();
+        $ordersLastMinute = $this->orderRepository->getOrdersLastMinute();
 
         return response()->json([
-            'total_revenue' => (float) $totalRevenue,
+            'total_revenue' => $totalRevenue,
             'top_products' => $topProducts,
-            'revenue_last_minute' => (float) $revenueLastMinute,
-            'orders_last_minute' => (int) $ordersLastMinute,
+            'revenue_last_minute' => $revenueLastMinute,
+            'orders_last_minute' => $ordersLastMinute,
         ]);
     }
 }
