@@ -28,7 +28,7 @@ class OrderController extends Controller
         return response()->json([
             'message' => 'Order created',
             'order' => $order
-        ], 201);
+        ]);
     }
 
 

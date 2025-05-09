@@ -3,19 +3,24 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Broadcasting\PrivateChannel;
+use Illuminate\Broadcasting\Channel;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class OrderCreated implements ShouldBroadcast
+class OrderCreated implements ShouldBroadcastNow
 {
     use InteractsWithSockets;
 
-    public function __construct(public array $orderData) {}
+    public $order;
+
+    public function __construct(array $orderData)
+    {
+        $this->order = $orderData;
+    }
 
     public function broadcastOn(): array
     {
         return [
-            new PrivateChannel('orders'),
+            new Channel('orders'),
         ];
     }
 
