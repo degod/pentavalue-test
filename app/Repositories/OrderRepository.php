@@ -25,14 +25,15 @@ class OrderRepository implements OrderRepositoryInterface
         return (float) DB::table('orders')->sum('price');
     }
 
-    public function getTopProducts(): array
+    public function getTopProducts(int $limit = 10): array
     {
         return DB::select(
-            'SELECT product_id, SUM(quantity) as total_quantity
+            'SELECT product_id, COUNT(*) as total_orders, SUM(price * quantity) as total_revenue, SUM(quantity) as total_quantity
              FROM orders
              GROUP BY product_id
-             ORDER BY total_quantity DESC
-             LIMIT 5'
+             ORDER BY total_orders DESC
+             LIMIT ?',
+            [$limit]
         );
     }
 
