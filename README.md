@@ -1,61 +1,127 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Pentavalue AI Reporting Test
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+This is a system to manage and analyze sales data in real-time. The task will involve leveraging AI systems like OpenAI's ChatGPT or Gemini for assistance and generating recommendations, while other parts of the system must be written manually. The project
+must include a real-time reporting feature and integration with external APIs.
 
-## About Laravel
+## Specifications
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Below are the specifications of dependencies:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+-   Laravel version 12
+-   PHP version 8.2
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Project Details
 
-## Learning Laravel
+I tried to keep things quite simple within the project. I basically worked with:
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+-   Routes:
+    -   Web: I kept only 2 GET routes - `Base (/)` and `Recommendations (/recommendations)`
+    -   API: As required by the project - `Orders [POST: /orders]` and `Analytics [GET: /analytics]`
+    -   Channel: I also have 2 public channel routes - `Orders (/orders)` and `Recommendations (/recommendations)`
+-   Views:
+    -   Welcome blade: This is the view that serves the base web route. It shows the dashboard chart and other analytics components. These components are updated using the CDN version of Laravel Echo + PusherJS and a bit of other javascript
+    -   Recommendations: This blade shows the AI recommendations and current weather forecast too (hardcoded to Lagos, NG). The UI calls the analytics using the weather data and top orders from the SQLite to get recommendations from ChatGPT AI.
+-   Controller:
+    -   I have only used a controller class `OrderController` to manage the basic functions required for simplicity. In this class:
+        -   store(): This method is used to store order and is linked to the `Orders [POST: /orders]` API route. After an order is created:
+            -   An event is sent to pusher.com (I have my configs in the env) with the help of `artisan queue:work`
+            -   We pull the current weather status (config also available in env) with the help of OpenWeatherApi
+            -   Using the weather data and the order data, we prompt ChatGPT (config also in env) asking for recommendations
+            -   Finally, we send the result from the recommendations prompt so we can update the UI
+        -   analytics(): This method is used to pull analytical data from the SQLite database, adds the weather data pull using HttpGuzzle and finally recommendations from ChatGPT prompt using HttpGuzzle as well. This method is equally linked to the `Analytics [GET: /analytics]` API route as required by the task.
+        -   generateRecommendations(): Used for prompting ChatGPT using HttpGuzzle
+        -   getWeatherData(): Used for fetching weather info using HttpGuzzle
+        -   getDefaultWeatherData(): Holds default/fallback data for weather data incase we are unable to reach OpenWeatherAPI
+-   Request: `CreateOrderRequest` is the only request class used to validate the `Orders [POST: /orders]` API route POST request.
+-   Repositories:
+    -   OrderRepository: This was the only repository used since we have to deal with only 1 table. Of course, we had an interface for it as its blueprint for consistency. Within the OrderRepository:
+        -   create(): This is used to write an order data to the order table using the `DB raw` class (avoiding the use of ORM)
+        -   getTotalRevenue(): To make it easier like an ORM, this is a helper for pulling total revenue for statistics
+        -   getTopProducts(): This is also a helper method within our repository to get top (10) products for display
+        -   getRevenueLastMinute(): Also a helper method to fetch the revenue within the last minute
+        -   getOrdersLastMinute(): A helper to fetch orders within the last minute
+-   Events:
+    -   OrderCreated: The event class for broadcasting new orders to pusher
+    -   RecommendationsGenerated: The event class for broadcasting recommendations by ChatGPT
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Setting up the project locally
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Before you start, ensure you have the following installed:
 
-## Laravel Sponsors
+-   Docker (up-to-date will be just fine)
+-   Web browser
+-   Shell terminal environment
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Getting Started
 
-### Premium Partners
+1. **Clone the repository:**
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development/)**
-- **[Active Logic](https://activelogic.com)**
+    ```bash
+    git clone https://github.com/degod/pentavalue-test.git
+    ```
+
+2. **Navigate to the project directory:**
+
+    ```bash
+    cd pentavalue-test/
+    ```
+
+3. **Install Composer dependencies:**
+
+    ```bash
+    docker-compose up --build -d
+    ```
+
+4. **Start the application with Laravel Sail:**
+
+    ```bash
+    docker exec -it pentavalue-app composer install && cp .env.example .env && php artisan key:generate
+    ```
+
+5. **Logging in to container shell:**
+
+    ```bash
+    docker exec -it pentavalue-app bash
+    ```
+
+6. **Running queue worker in container:**
+
+    ```bash
+    php artisan queue:work
+    ```
+
+7. **Exiting container shell:**
+   First hit `control + C` on your keyboard to stop the worker in the terminal. Then...
+
+    ```bash
+    exit
+    ```
+
+8. **Accessing the application:**
+
+-   The application should now be running on your local environment.
+-   Navigate to `http://localhost:8088` in your browser to access the application and click the `See More` button for recommendations.
+-   To go to recommendations directly, visit `http://localhost:8088/recommendations` for result.
+
+9. **Stopping the application:**
+
+    ```bash
+    docker-compose down
+    ```
 
 ## Contributing
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+If you encounter bugs or wish to contribute, please follow these steps:
 
-## Code of Conduct
+-   Fork the repository and clone it locally.
+-   Create a new branch (`git checkout -b feature/fix-issue`).
+-   Make your changes and commit them (`git commit -am 'Fix issue'`).
+-   Push to the branch (`git push origin feature/fix-issue`).
+-   Create a new Pull Request against the `main` branch, tagging `@degod`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Contact
 
-## Security Vulnerabilities
+For inquiries or assistance, you can reach out to Godwin Uche:
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+-   `Email:` degodtest@gmail.com
+-   `Phone:` +2348024245093
