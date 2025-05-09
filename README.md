@@ -102,18 +102,19 @@ Before you start, ensure you have the following installed:
     php artisan queue:work
     ```
 
-9. **Exiting container shell:**
+9. **Accessing the application:**
+
+-   The application should now be running on your local environment.
+-   Navigate to `http://localhost:8088` in your browser to access the application and click the `See More` button for recommendations.
+-   To go to recommendations directly, visit `http://localhost:8088/recommendations` for result.
+- Note: If the AI recommendation or Weather info is failing, feel free to replace the keys in the `.env` with yours and retry
+
+10. **Exiting container shell:**
    First hit `control + C` on your keyboard to stop the worker in the terminal. Then...
 
     ```bash
     exit
     ```
-
-10. **Accessing the application:**
-
--   The application should now be running on your local environment.
--   Navigate to `http://localhost:8088` in your browser to access the application and click the `See More` button for recommendations.
--   To go to recommendations directly, visit `http://localhost:8088/recommendations` for result.
 
 11. **Stopping the application:**
 
