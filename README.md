@@ -72,22 +72,22 @@ Before you start, ensure you have the following installed:
     docker-compose up --build -d
     ```
 
-4. **Start the application with Laravel Sail:**
+4. **Getting your env sorted:**
 
     ```bash
     docker exec -it pentavalue-app cp .env.example .env
     ```
 
-5. **Start the application with Laravel Sail:**
+5. **Installing composer:**
 
     ```bash
     composer install
     ```
 
-6. **Start the application with Laravel Sail:**
+6. **Sorting your application key:**
 
     ```bash
-    docker exec -it pentavalue-app && php artisan key:generate
+    docker exec -it pentavalue-app  php artisan key:generate
     ```
 
 7. **Logging in to container shell:**
