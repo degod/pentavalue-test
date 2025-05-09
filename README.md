@@ -75,35 +75,41 @@ Before you start, ensure you have the following installed:
 4. **Start the application with Laravel Sail:**
 
     ```bash
-    docker exec -it pentavalue-app composer install && cp .env.example .env && php artisan key:generate
+    docker exec -it pentavalue-app cp .env.example .env && php artisan key:generate
     ```
 
-5. **Logging in to container shell:**
+5. **Start the application with Laravel Sail:**
+
+    ```bash
+    composer install
+    ```
+
+6. **Logging in to container shell:**
 
     ```bash
     docker exec -it pentavalue-app bash
     ```
 
-6. **Running queue worker in container:**
+7. **Running queue worker in container:**
 
     ```bash
     php artisan queue:work
     ```
 
-7. **Exiting container shell:**
+8. **Exiting container shell:**
    First hit `control + C` on your keyboard to stop the worker in the terminal. Then...
 
     ```bash
     exit
     ```
 
-8. **Accessing the application:**
+9. **Accessing the application:**
 
 -   The application should now be running on your local environment.
 -   Navigate to `http://localhost:8088` in your browser to access the application and click the `See More` button for recommendations.
 -   To go to recommendations directly, visit `http://localhost:8088/recommendations` for result.
 
-9. **Stopping the application:**
+10. **Stopping the application:**
 
     ```bash
     docker-compose down
